@@ -113,7 +113,18 @@ click_to_ip/
 - Sử dụng CORS để bảo vệ API
 - App Password đảm bảo bảo mật tài khoản Gmail chính
 
-## 📝 License
+## � Deploy Lên Vercel
+
+### Quick Deploy
+```bash
+vercel
+```
+
+Xem hướng dẫn chi tiết trong [DEPLOY.md](DEPLOY.md)
+
+**Lưu ý:** Vercel sử dụng serverless functions nên tính năng lưu file local và báo cáo sẽ không hoạt động. Tính năng gửi email vẫn hoạt động bình thường.
+
+## �📝 License
 
 ISC
 

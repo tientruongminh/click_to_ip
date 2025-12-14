@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "vercel-build": "echo 'Build complete'"
   },
   "keywords": [
     "ip",
@@ -16,6 +17,9 @@
   ],
   "author": "",
   "license": "ISC",
+  "engines": {
+    "node": ">=18.x"
+  },
   "dependencies": {
     "express": "^4.18.2",
     "nodemailer": "^6.9.7",
