@@ -10,6 +10,7 @@
 - ✅ Gửi thông tin chi tiết qua email tự động
 - ✅ Email được format đẹp với HTML
 - ✅ **BẬT/TẮT email tùy ý** - Không cần email vẫn chạy được!
+- ✅ **Tracking liên tục**: Gửi email mỗi lần quay + tự động mỗi 3 phút
 
 ## 🚀 Cài đặt
 
