@@ -9,6 +9,7 @@
 - ✅ Hiển thị thông tin vị trí (thành phố, quốc gia)
 - ✅ Gửi thông tin chi tiết qua email tự động
 - ✅ Email được format đẹp với HTML
+- ✅ **BẬT/TẮT email tùy ý** - Không cần email vẫn chạy được!
 
 ## 🚀 Cài đặt
 
@@ -41,12 +42,22 @@ cp .env.example .env
 Sau đó chỉnh sửa file `.env` với thông tin của bạn:
 
 ```env
+# Bật/Tắt email - set 'true' để bật, 'false' để tắt
+EMAIL_ENABLED=false
+
+# Chỉ cần nếu EMAIL_ENABLED=true
 EMAIL_USER=your-gmail@gmail.com
 EMAIL_PASSWORD=your-16-char-app-password
 PORT=3000
 ```
 
+**💡 Mới:** Giờ bạn có thể:
+- ❌ **Tắt email** (`EMAIL_ENABLED=false`) - App vẫn chạy, chỉ không gửi email
+- ✅ **Bật email** (`EMAIL_ENABLED=true`) - Gửi email mỗi lần có người truy cập
+
 **Lưu ý:** Sử dụng **App Password** (16 ký tự), KHÔNG phải mật khẩu thường của Gmail!
+
+📖 **Chi tiết:** Xem file [EMAIL_SETUP.md](EMAIL_SETUP.md) để biết cách bật/tắt email
 
 ## 🎯 Sử dụng
 

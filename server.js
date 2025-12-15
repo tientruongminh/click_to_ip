@@ -82,13 +82,31 @@ app.use(express.json());
 app.use(express.static('.')); // Serve static files from current directory
 
 // Configure email transporter
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD
+let transporter = null;
+let emailConfigured = false;
+
+console.log('📧 Email Configuration Check:');
+console.log('   EMAIL_USER:', process.env.EMAIL_USER ? '✅ Found: ' + process.env.EMAIL_USER : '❌ Not found');
+console.log('   EMAIL_PASSWORD:', process.env.EMAIL_PASSWORD ? '✅ Found (hidden)' : '❌ Not found');
+
+if (process.env.EMAIL_USER && process.env.EMAIL_PASSWORD) {
+    try {
+        transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASSWORD
+            }
+        });
+        emailConfigured = true;
+        console.log('✅ Email service READY - Will send emails automatically');
+    } catch (error) {
+        console.error('❌ Email service FAILED:', error.message);
     }
-});
+} else {
+    console.log('⚠️  Email service DISABLED - Missing EMAIL_USER or EMAIL_PASSWORD');
+    console.log('💡 Add these environment variables to enable email sending');
+}
 
 // Route to send IP information via email
 app.post('/send-ip', async (req, res) => {
@@ -381,14 +399,27 @@ app.post('/send-ip', async (req, res) => {
         });
         writeData(trackingData);
         
-        await transporter.sendMail(mailOptions);
+        // Send email automatically if configured
+        let emailSent = false;
+        if (emailConfigured && transporter) {
+            try {
+                await transporter.sendMail(mailOptions);
+                emailSent = true;
+                console.log(`✅ Email sent successfully for IP: ${data.ip} (${data.device})`);
+            } catch (emailError) {
+                console.error('❌ Error sending email:', emailError.message);
+            }
+        } else {
+            console.log(`⚠️  Email NOT sent - Service not configured for IP: ${data.ip} (${data.device})`);
+        }
         
-        console.log(`✅ Email sent successfully for IP: ${data.ip} (${data.device})`);
         console.log(`📊 Total visitors: ${trackingData.visitors.length}`);
         
         res.json({ 
             success: true, 
-            message: 'Email sent successfully',
+            message: emailSent ? 'Email sent successfully' : 'Data saved (email not configured)',
+            emailSent: emailSent,
+            emailConfigured: emailConfigured,
             totalVisitors: trackingData.visitors.length
         });
         
