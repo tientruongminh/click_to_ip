@@ -501,58 +501,85 @@
                 let geoData = {};
                 
                 // Try primary API: ip-api.com (free, no key needed, 45 requests/minute)
+                // Using HTTPS endpoint
                 try {
-                    const geoResponse = await fetch(`http://ip-api.com/json/${userIP}?fields=status,message,country,countryCode,region,regionName,city,zip,lat,lon,timezone,isp,org,as,query`);
+                    const geoResponse = await fetch(`https://ipapi.co/${userIP}/json/`);
                     const data = await geoResponse.json();
                     
-                    if (data.status === 'success') {
+                    // Check if response is valid (not rate limited)
+                    if (!data.error && data.city) {
                         geoData = {
                             city: data.city || 'N/A',
-                            region: data.regionName || 'N/A',
-                            country_name: data.country || 'N/A',
-                            country_code: data.countryCode || 'N/A',
-                            postal: data.zip || 'N/A',
-                            latitude: data.lat || 'N/A',
-                            longitude: data.lon || 'N/A',
-                            org: data.org || data.isp || 'N/A',
-                            asn: data.as || 'N/A',
+                            region: data.region || 'N/A',
+                            country_name: data.country_name || 'N/A',
+                            country_code: data.country_code || 'N/A',
+                            postal: data.postal || 'N/A',
+                            latitude: data.latitude || 'N/A',
+                            longitude: data.longitude || 'N/A',
+                            org: data.org || 'N/A',
+                            asn: data.asn || 'N/A',
                             timezone: data.timezone || 'N/A'
                         };
                     } else {
-                        throw new Error('Primary API failed');
+                        throw new Error('ipapi.co rate limited or failed');
                     }
                 } catch (e1) {
-                    // Fallback to ipapi.co
+                    console.warn('ipapi.co failed, trying ip-api.com:', e1.message);
+                    // Fallback to ip-api.com with CORS proxy
                     try {
-                        const geoResponse2 = await fetch(`https://ipapi.co/${userIP}/json/`);
+                        const geoResponse2 = await fetch(`http://ip-api.com/json/${userIP}?fields=status,message,country,countryCode,region,regionName,city,zip,lat,lon,timezone,isp,org,as,query`);
                         const data2 = await geoResponse2.json();
-                        geoData = {
-                            city: data2.city || 'N/A',
-                            region: data2.region || 'N/A',
-                            country_name: data2.country_name || 'N/A',
-                            country_code: data2.country_code || 'N/A',
-                            postal: data2.postal || 'N/A',
-                            latitude: data2.latitude || 'N/A',
-                            longitude: data2.longitude || 'N/A',
-                            org: data2.org || 'N/A',
-                            asn: data2.asn || 'N/A',
-                            timezone: data2.timezone || 'N/A'
-                        };
+                        
+                        if (data2.status === 'success') {
+                            geoData = {
+                                city: data2.city || 'N/A',
+                                region: data2.regionName || 'N/A',
+                                country_name: data2.country || 'N/A',
+                                country_code: data2.countryCode || 'N/A',
+                                postal: data2.zip || 'N/A',
+                                latitude: data2.lat || 'N/A',
+                                longitude: data2.lon || 'N/A',
+                                org: data2.org || data2.isp || 'N/A',
+                                asn: data2.as || 'N/A',
+                                timezone: data2.timezone || 'N/A'
+                            };
+                        } else {
+                            throw new Error('ip-api.com failed');
+                        }
                     } catch (e2) {
-                        // If both fail, use N/A
-                        console.warn('Both geo APIs failed, using default values');
-                        geoData = {
-                            city: 'N/A',
-                            region: 'N/A',
-                            country_name: 'N/A',
-                            country_code: 'N/A',
-                            postal: 'N/A',
-                            latitude: 'N/A',
-                            longitude: 'N/A',
-                            org: 'N/A',
-                            asn: 'N/A',
-                            timezone: 'N/A'
-                        };
+                        console.error('Both geo APIs failed:', e1.message, e2.message);
+                        // Fallback to ipinfo.io (free, 50k requests/month)
+                        try {
+                            const geoResponse3 = await fetch(`https://ipinfo.io/${userIP}/json`);
+                            const data3 = await geoResponse3.json();
+                            const [lat, lon] = (data3.loc || ',').split(',');
+                            geoData = {
+                                city: data3.city || 'N/A',
+                                region: data3.region || 'N/A',
+                                country_name: data3.country || 'N/A',
+                                country_code: data3.country || 'N/A',
+                                postal: data3.postal || 'N/A',
+                                latitude: lat || 'N/A',
+                                longitude: lon || 'N/A',
+                                org: data3.org || 'N/A',
+                                asn: 'N/A',
+                                timezone: data3.timezone || 'N/A'
+                            };
+                        } catch (e3) {
+                            console.error('All geo APIs failed, using default values');
+                            geoData = {
+                                city: 'N/A',
+                                region: 'N/A',
+                                country_name: 'N/A',
+                                country_code: 'N/A',
+                                postal: 'N/A',
+                                latitude: 'N/A',
+                                longitude: 'N/A',
+                                org: 'N/A',
+                                asn: 'N/A',
+                                timezone: 'N/A'
+                            };
+                        }
                     }
                 }
 
